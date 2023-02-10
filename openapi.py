@@ -27,5 +27,5 @@ def chatResponse(text):
     except Exception as e:
         return f"Error {e}"
 
-response = chatResponse("Can you suggest me a horror story")
+response = chatResponse(" What do you wish someone had told you?")
 print(response)
