@@ -8,9 +8,14 @@ from multiprocessing import Process
 
 login_attempt = 0
 comment_attempt = 0
+location_attempt = 0
+element_attempt = 0
 
 
 def login(driver, email, password):
+    global login_attempt
+    if login_attempt>0:
+        time.sleep(5)
     try: 
         url = "https://www.tripadvisor.in/"
         driver.get(url)
@@ -29,39 +34,75 @@ def login(driver, email, password):
         driver.find_element(By.CSS_SELECTOR, '#regSignIn > div.coreRegCTAWrapper > button.ui_button.primary.coreRegPrimaryButton.regSubmitBtnEvent').click()
         time.sleep(3)
 
-        WebDriverWait(driver, 40).until(EC.presence_of_element_located((By.XPATH,'/html/body/div[1]/main/div[3]/div/div/div/form/input[1]'))).send_keys("france")
+        WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH,'/html/body/div[1]/main/div[3]/div/div/div/form/input[1]'))).send_keys("france")
     
     except:
-        global login_attempt
-        if login_attempt<5:
+        if login_attempt<6:
+            driver.delete_all_cookies()
             login_attempt += 1
+            print(f"Login Attempt +++++++++++++++++++++++++++++++++  :{login_attempt}")
             login(driver, email, password)
+        else:
+            print("Login exit &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+            driver.quit()
+            exit()
+
+def click_locations(driver):
+    global location_attempt
+    if location_attempt>0:
+        time.sleep(5)
+    try:
+        WebDriverWait(driver, 40).until(EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div/div[2]/div/div/div/div/div[1]/div/div[1]/div/div[3]/div/div[1]/div/div[2]/div/div/div/div/div/div/div[1]/div/div[2]/span[2]"))).click()
+        driver.switch_to.window(driver.window_handles[1])
+    except:
+        
+        if location_attempt<5:
+            driver.refresh()
+            location_attempt+=1
+            print(f"click_location $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ :{location_attempt}")
+            click_locations(driver)
+        else:
+            print("Click location exit ********************************")
+            driver.quit()
+            exit()
+
+
+def get_element_selector(driver):
+    global element_attempt
+    if element_attempt>0:
+        driver.refresh()
+        time.sleep(10)
+    try:
+        WebDriverWait(driver,20).until(EC.presence_of_element_located((By.XPATH,'/html/body/div[1]/main/div[7]/div[1]/div[2]/div/div/div[2]/div/ul')))
+        elements = driver.find_element(By.XPATH,"/html/body/div[1]/main/div[7]/div[1]/div[2]/div/div/div[2]/div/ul")
+        return elements
+    except:
+        if element_attempt<6:
+            driver.refresh()
+            element_attempt +=1
+            print(f"element_attempt ############################ :{element_attempt}")
+            return get_element_selector(driver)
+        else:
+            print("Element exit ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+            driver.quit()
+            exit()
+
 
 
 def retrive_post(driver):
-    WebDriverWait(driver, 40).until(EC.presence_of_element_located((By.CSS_SELECTOR,"#lithium-root > main > div.QvCXh.cyIij.fluiI > div > div > div > form > button.riJbp._G._H.B-._S.t.u.j.Cj.PGlrP"))).click()
-
     try:
-        WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div/div[2]/div/div/div/div/div[1]/div/div[1]/div/div[3]/div/div[1]/div/div[2]/div/div/div/div/div/div/div[1]/div/div[2]/span[2]"))).click()
-        driver.switch_to.window(driver.window_handles[1])
+        WebDriverWait(driver, 40).until(EC.presence_of_element_located((By.CSS_SELECTOR,"#lithium-root > main > div.QvCXh.cyIij.fluiI > div > div > div > form > button.riJbp._G._H.B-._S.t.u.j.Cj.PGlrP"))).click()
     except:
-        driver.refresh()
-        driver.refresh()
-        time.sleep(5)
-        WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div/div[2]/div/div/div/div/div[1]/div/div[1]/div/div[3]/div/div[1]/div/div[2]/div/div/div/div/div/div/div[1]/div/div[2]/span[2]"))).click()
-        driver.switch_to.window(driver.window_handles[1])
+        print("Here it is ============================")
+        WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH,'/html/body/div[1]/main/div[3]/div/div/div/form/input[1]'))).send_keys("france")
+        WebDriverWait(driver, 40).until(EC.presence_of_element_located((By.CSS_SELECTOR,"#lithium-root > main > div.QvCXh.cyIij.fluiI > div > div > div > form > button.riJbp._G._H.B-._S.t.u.j.Cj.PGlrP"))).click()
+    
+    click_locations(driver)
+    elements = get_element_selector(driver)
+    if not elements:
+        driver.quit()
+        exit()    
 
-    refresh = False
-    try:
-        WebDriverWait(driver,20).until(EC.presence_of_element_located((By.XPATH,'/html/body/div[1]/main/div[7]/div[1]/div[2]/div/div/div[2]/div/ul')))
-    except:
-        refresh=True
-
-    if refresh:
-        driver.refresh()
-        time.sleep(5)
-
-    elements = driver.find_element(By.XPATH,"/html/body/div[1]/main/div[7]/div[1]/div[2]/div/div/div[2]/div/ul")
     allLiElement = elements.find_elements(By.TAG_NAME, 'li')
     all_link = []
     for url in allLiElement:
@@ -72,6 +113,9 @@ def retrive_post(driver):
 
 
 def post_comment(driver,url,waitingTime):
+    global comment_attempt
+    if comment_attempt>0:
+        time.sleep(5)
     try:
         print("Current URL: ",url)
         driver.get(url)
@@ -106,12 +150,15 @@ def post_comment(driver,url,waitingTime):
         time.sleep(5)
 
     except:
-        global comment_attempt
-        if comment_attempt <5:
+        if comment_attempt <6:
             comment_attempt += 1
             waitingTime+=1
+            print(f"comment Attempt ---------------------------  :{comment_attempt}")
             post_comment(driver,url,waitingTime)
-
+        else:
+            print("comment exit @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+            driver.quit()
+            exit()
 
 def main(row):    
     driver = webdriver.Chrome()
@@ -130,22 +177,22 @@ def main(row):
         break
 
     print("sucesssss")
-    time.sleep(15)
+    driver.quit()
     
 
-if __name__ == "__main__":
-    procs = []
-    with open('accounts.csv') as f:
-        linesObj = csv.reader(f)
+# if __name__ == "__main__":
+#     procs = []
+#     with open('accounts.csv') as f:
+#         linesObj = csv.reader(f)
 
-        # Instantiating multiple process with arguments
-        for row in linesObj:
-            proc = Process(target=main, args=(row,))
-            procs.append(proc)
-            proc.start()
+#         # Instantiating multiple process with arguments
+#         for row in linesObj:
+#             proc = Process(target=main, args=(row,))
+#             procs.append(proc)
+#             proc.start()
 
-    # Complete the process
-    for proc in procs:
-        proc.join()
+#     # Complete the process
+#     for proc in procs:
+#         proc.join()
             
 
