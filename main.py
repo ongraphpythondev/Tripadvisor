@@ -1,19 +1,15 @@
 import time
 from selenium import webdriver
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
-from multiprocessing import Process
-from openapi import chatResponse
+from openapi_api import chatResponse
 
 login_attempt = 0
 comment_attempt = 0
 location_attempt = 0
 element_attempt = 0
 
-options = Options()
-# options.add_argument("--headless")
 
 def login(driver, email, password):
     global login_attempt
@@ -43,10 +39,10 @@ def login(driver, email, password):
         if login_attempt<6:
             driver.delete_all_cookies()
             login_attempt += 1
-            print(f"Login Attempt +++++++++++++++++++++++++++++++++  :{login_attempt}")
+            print(f"LOGIN ATTEMPT : {login_attempt}")
             login(driver, email, password)
         else:
-            print("Login exit &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+            print("LOGIN EXIT")
             driver.quit()
             exit()
 
@@ -62,10 +58,10 @@ def click_locations(driver):
         if location_attempt<5:
             driver.refresh()
             location_attempt+=1
-            print(f"click_location $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ :{location_attempt}")
+            print(f"CLICK LOCATION : {location_attempt}")
             click_locations(driver)
         else:
-            print("Click location exit ********************************")
+            print("CLICK LOCATION EXIT")
             driver.quit()
             exit()
 
@@ -83,10 +79,10 @@ def get_element_selector(driver):
         if element_attempt<6:
             driver.refresh()
             element_attempt +=1
-            print(f"element_attempt ############################ :{element_attempt}")
+            print(f"ELEMENT ATTEMPT :{element_attempt}")
             return get_element_selector(driver)
         else:
-            print("Element exit ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+            print("ELEMENT EXIT")
             driver.quit()
             exit()
 
@@ -96,7 +92,6 @@ def retrive_post(driver):
     try:
         WebDriverWait(driver, 40).until(EC.presence_of_element_located((By.CSS_SELECTOR,"#lithium-root > main > div.QvCXh.cyIij.fluiI > div > div > div > form > button.riJbp._G._H.B-._S.t.u.j.Cj.PGlrP"))).click()
     except:
-        print("Here it is ============================")
         WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH,'/html/body/div[1]/main/div[3]/div/div/div/form/input[1]'))).send_keys("france")
         WebDriverWait(driver, 40).until(EC.presence_of_element_located((By.CSS_SELECTOR,"#lithium-root > main > div.QvCXh.cyIij.fluiI > div > div > div > form > button.riJbp._G._H.B-._S.t.u.j.Cj.PGlrP"))).click()
     
@@ -120,14 +115,10 @@ def post_comment(driver,url,waitingTime):
     if comment_attempt>0:
         time.sleep(5)
     try:
-        print("Current URL: ",url)
+        print("URRENT URL: ",url)
         driver.get(url)
         time.sleep(waitingTime)
-        # print("searching for country location")
-        # country = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#lithium-root > main > div.cBOoN > div.QvCXh.mvTrV.cyIij.fluiI > div > h1 > span > span.\{geoClass\}'))).text
-        # # country = driver.find_element(By.XPATH, '/html/body/div[1]/main/div[1]/div[1]/div/h1/span/span[2]').text
-        # print(f"countey location is : {country}")
-
+        
         try:
             WebDriverWait(driver,15).until(EC.element_to_be_clickable((By.XPATH,'//*[@id="lithium-root"]/main/div[1]/div[2]/div/div//child::div/button'))).click()
             time.sleep(1)
@@ -137,7 +128,6 @@ def post_comment(driver,url,waitingTime):
 
         mostViews = {}
         columns = len(driver.find_elements(By.XPATH, '/html/body/div[4]/div[2]/div/div/div[2]/div[1]/table/tbody/tr[2]/td'))
-        print(f"Columns {columns}")
         for j in range(2,25):
             if j in (5,9,16):
                 continue
@@ -145,25 +135,23 @@ def post_comment(driver,url,waitingTime):
             try:
                 mostViews[j]=driver.find_element(By.XPATH,'/html/body/div[4]/div[2]/div/div/div[2]/div[1]/table/tbody/tr['+ str(j) +']/td['+ str(columns-1) +']').text
             except:
-                print("exception ",j)
+                print("EXCEPTION ",j)
 
         values = list(map(lambda x: int(x.replace(',','')) if ',' in x else int(x), mostViews.values()))
         keys = list(mostViews.keys())
         maxIndex = keys[values.index(max(values))]
 
-        # question = driver.find_element(By.XPATH, '/html/body/div[4]/div[2]/div/div/div[2]/div[1]/table/tbody/tr['+ str(maxIndex) +']//child::td/b/a').text
-        # print(f"The question is : {question}")
         WebDriverWait(driver,20).until(EC.element_to_be_clickable((By.XPATH,'/html/body/div[4]/div[2]/div/div/div[2]/div[1]/table/tbody/tr['+ str(maxIndex) +']//child::td/b/a'))).click()
-        print("Clicked")
-        mainquestion = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH, '/html/body/div[4]/div[2]/div[2]/div/div[2]/div[1]/div[5]/div/div/div[2]/div[1]/div[2]'))).text
-        mainquestion = f'"{mainquestion}"'+' generate a reply for advertisement and advantage of "travpart" app'
-        print(mainquestion)
-        response = chatResponse(mainquestion)
+        print("CLICKED COMMENT QUESTION")
+        question = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH, '/html/body/div[4]/div[2]/div[2]/div/div[2]/div[1]/div[5]/div/div/div[2]/div[1]/div[2]'))).text
+        question = f'"{question}"'+' generate a reply for advertisement and advantage of "travpart" app'
+
+        response = chatResponse(question)
         if response[:2]=="AI":
             response = response[3:]
-        print(response)
+
         WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, '//*[@id="message"]'))).send_keys(response)
-        time.sleep(5)
+        time.sleep(3)
         WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CLASS_NAME, 'submitButton'))).click()
         time.sleep(5)
 
@@ -171,15 +159,15 @@ def post_comment(driver,url,waitingTime):
         if comment_attempt <10:
             comment_attempt += 1
             waitingTime+=1
-            print(f"comment Attempt ---------------------------  :{comment_attempt}")
+            print(f"COMMENT ATTEMPT : {comment_attempt}")
             post_comment(driver,url,waitingTime)
         else:
-            print("comment exit @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+            print("COMMENT EXIT")
             driver.quit()
             exit()
 
 def main(row):    
-    driver = webdriver.Chrome(options=options)
+    driver = webdriver.Chrome()
     driver.maximize_window()
     driver.delete_all_cookies()
 
@@ -190,27 +178,13 @@ def main(row):
     login(driver, email, password)
     all_post = retrive_post(driver)
     print(all_post)
-    for post in all_post[1:]:
+    for post in all_post:
         post_comment(driver,post,1)
-        # break
+        global comment_attempt
+        comment_attempt=0
 
-    print("sucesssss")
+    print("SCRIPT RUN SUCCESSFULLY")
     driver.quit()
     
-
-# if __name__ == "__main__":
-#     procs = []
-#     with open('accounts.csv') as f:
-#         linesObj = csv.reader(f)
-
-#         # Instantiating multiple process with arguments
-#         for row in linesObj:
-#             proc = Process(target=main, args=(row,))
-#             procs.append(proc)
-#             proc.start()
-
-#     # Complete the process
-#     for proc in procs:
-#         proc.join()
             
 
