@@ -30,6 +30,6 @@ OPENAI_API_KEY=<Enter Your API_KEY>
 
 ### run the script
 ```
-python3 main.py
+python3 run.py
 ```
 
