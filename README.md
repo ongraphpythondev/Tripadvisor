@@ -16,8 +16,13 @@ source venv/bin/activate
 ```
 pip install -r requirements.txt
 ```
-
+### Make sure you have redis install on your machine
 ### Provide the login credential inside account.csv file
+
+### Change the OPENAI_API_KEY in .env file
+```
+OPENAI_API_KEY=<Enter Your API_KEY>
+```
 
 ### run the script
 ```

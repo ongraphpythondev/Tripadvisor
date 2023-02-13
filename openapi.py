@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
 openai.api_key = os.getenv("OPENAI_API_KEY")
 print(os.getenv("OPENAI_API_KEY"))
 def chatResponse(text):
@@ -26,6 +25,3 @@ def chatResponse(text):
         return text1
     except Exception as e:
         return f"Error {e}"
-
-response = chatResponse(" What do you wish someone had told you?")
-print(response)
