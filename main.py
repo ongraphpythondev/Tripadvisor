@@ -1,9 +1,11 @@
 import time
+import csv
 from selenium import webdriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from openapi_api import chatResponse
+from multiprocessing import Process, Pool
 
 login_attempt = 0
 comment_attempt = 0
@@ -166,14 +168,10 @@ def post_comment(driver,url,waitingTime):
             driver.quit()
             exit()
 
-def main(row):    
+def main(email,password):    
     driver = webdriver.Chrome()
     driver.maximize_window()
     driver.delete_all_cookies()
-
-    email = row[0]
-    password = row[1]
-    print(email,password)
 
     login(driver, email, password)
     all_post = retrive_post(driver)
@@ -187,4 +185,21 @@ def main(row):
     driver.quit()
     
             
+if __name__ == "__main__":
+    with open('accounts.csv') as f:
+        linesObj = csv.reader(f)
+        pool = Pool(processes=4) 
+        procs = []
+        # Instantiating multiple process with arguments
+        count=0
+        for row in linesObj:
+            count+=1
+            print("TASK ADDED TO QUEUE",count, row)
+            email = row[0]
+            password = row[1]
+            print(email,password)
+            result = pool.apply_async(main,(email,password))
 
+        pool.close()
+        pool.join()
+           
