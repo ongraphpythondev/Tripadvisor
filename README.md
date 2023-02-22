@@ -22,6 +22,7 @@ pip install -r requirements.txt
 https://www.digitalocean.com/community/tutorials/how-to-install-and-secure-redis-on-ubuntu-22-04
 ```
 ### Provide the login credential inside account.csv file
+### Provide the country name inside country,csv
 
 ### Change the OPENAI_API_KEY in .env file
 ```
