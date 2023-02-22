@@ -22,6 +22,10 @@ def chatResponse(text):
         text1 = response['choices'][0]['text']
         if text1[1:3]=="AI":
             return text1[5:]
+        if text1[:2]=="AI":
+            return text1[4:]
+        if text1[2:4]=="AI":
+            return text1[6:]
         return text1
     except Exception as e:
         return f"Error {e}"

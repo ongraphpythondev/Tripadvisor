@@ -13,7 +13,7 @@ location_attempt = 0
 element_attempt = 0
 
 
-def login(driver, email, password):
+def login(driver, email, password, country):
     global login_attempt
     if login_attempt>0:
         time.sleep(5)
@@ -35,14 +35,14 @@ def login(driver, email, password):
         driver.find_element(By.CSS_SELECTOR, '#regSignIn > div.coreRegCTAWrapper > button.ui_button.primary.coreRegPrimaryButton.regSubmitBtnEvent').click()
         time.sleep(3)
 
-        WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH,'/html/body/div[1]/main/div[3]/div/div/div/form/input[1]'))).send_keys("france")
+        WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH,'/html/body/div[1]/main/div[3]/div/div/div/form/input[1]'))).send_keys(country)
     
     except:
         if login_attempt<6:
             driver.delete_all_cookies()
             login_attempt += 1
             print(f"LOGIN ATTEMPT : {login_attempt}")
-            login(driver, email, password)
+            login(driver, email, password, country)
         else:
             print("LOGIN EXIT")
             driver.quit()
@@ -74,8 +74,8 @@ def get_element_selector(driver):
         driver.refresh()
         time.sleep(10)
     try:
-        WebDriverWait(driver,20).until(EC.presence_of_element_located((By.XPATH,'/html/body/div[1]/main/div[7]/div[1]/div[2]/div/div/div[2]/div/ul')))
-        elements = driver.find_element(By.XPATH,"/html/body/div[1]/main/div[7]/div[1]/div[2]/div/div/div[2]/div/ul")
+        WebDriverWait(driver,20).until(EC.presence_of_element_located((By.CSS_SELECTOR,'div.lfXDH:nth-child(1) > div:nth-child(2) > div:nth-child(1) > ul:nth-child(1)')))
+        elements = driver.find_element(By.CSS_SELECTOR,"div.lfXDH:nth-child(1) > div:nth-child(2) > div:nth-child(1) > ul:nth-child(1)")
         return elements
     except:
         if element_attempt<6:
@@ -149,9 +149,8 @@ def post_comment(driver,url,waitingTime):
         question = f'"{question}"'+' generate a reply for advertisement and advantage of "travpart" app'
 
         response = chatResponse(question)
-        if response[:2]=="AI":
-            response = response[3:]
-
+        
+        print(response)
         WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, '//*[@id="message"]'))).send_keys(response)
         time.sleep(3)
         WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CLASS_NAME, 'submitButton'))).click()
@@ -168,12 +167,12 @@ def post_comment(driver,url,waitingTime):
             driver.quit()
             exit()
 
-def main(email,password):    
+def start_process(country,email,password):
     driver = webdriver.Chrome()
     driver.maximize_window()
     driver.delete_all_cookies()
 
-    login(driver, email, password)
+    login(driver, email, password,country)
     all_post = retrive_post(driver)
     print(all_post)
     for post in all_post:
@@ -181,25 +180,18 @@ def main(email,password):
         global comment_attempt
         comment_attempt=0
 
-    print("SCRIPT RUN SUCCESSFULLY")
     driver.quit()
-    
-            
-if __name__ == "__main__":
-    with open('accounts.csv') as f:
-        linesObj = csv.reader(f)
-        pool = Pool(processes=4) 
-        procs = []
-        # Instantiating multiple process with arguments
-        count=0
-        for row in linesObj:
-            count+=1
-            print("TASK ADDED TO QUEUE",count, row)
-            email = row[0]
-            password = row[1]
-            print(email,password)
-            result = pool.apply_async(main,(email,password))
 
-        pool.close()
-        pool.join()
-           
+
+def main(row):    
+    email = row[0]
+    password = row[1]
+    print(email,password)
+    with open('country.csv') as f:
+        linesObj = csv.reader(f)
+
+        for country in linesObj:
+           start_process(country,email,password)
+
+    print("SCRIPT RUN SUCCESSFULLY")
+
