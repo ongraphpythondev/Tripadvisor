@@ -112,6 +112,21 @@ def retrive_post(driver):
     return all_link
 
 
+def comment_on_post(driver, response):
+    try:
+        WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, '//*[@id="message"]'))).send_keys(response)
+        time.sleep(5)
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CLASS_NAME, 'submitButton'))).click()
+        time.sleep(5)
+        error = driver.find_element(By.CSS_SELECTOR,'#POST_REPLY_FORM > div.balance > div.error')
+        print("ERROR IS COMING IN POST COMMENT", error)
+        if error:
+            print("POST IS RECOMMETING", error)
+            comment_on_post(driver, response)
+    except:
+        pass
+
+
 def post_comment(driver,url,waitingTime):
     global comment_attempt
     if comment_attempt>0:
@@ -149,12 +164,9 @@ def post_comment(driver,url,waitingTime):
         question = f'"{question}"'+' generate a reply for advertisement and advantage of "travpart" app'
 
         response = chatResponse(question)
-        
+        comment_on_post(driver, response)
         print(response)
-        WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, '//*[@id="message"]'))).send_keys(response)
-        time.sleep(3)
-        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CLASS_NAME, 'submitButton'))).click()
-        time.sleep(5)
+        
 
     except:
         if comment_attempt <10:
