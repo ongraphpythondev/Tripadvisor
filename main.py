@@ -6,6 +6,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from openapi_api import chatResponse
 from multiprocessing import Process, Pool
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
 
 login_attempt = 0
 comment_attempt = 0
@@ -162,10 +164,12 @@ def post_comment(driver,url,waitingTime):
         print("CLICKED COMMENT QUESTION")
         question = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH, '/html/body/div[4]/div[2]/div[2]/div/div[2]/div[1]/div[5]/div/div/div[2]/div[1]/div[2]'))).text
         question = f'"{question}"'+' generate a reply for advertisement and advantage of "travpart" app'
-
+       
         response = chatResponse(question)
-        comment_on_post(driver, response)
+
         print(response)
+        
+        comment_on_post(driver, response)
         
 
     except:
@@ -180,8 +184,12 @@ def post_comment(driver,url,waitingTime):
             exit()
 
 def start_process(country,email,password):
-    driver = webdriver.Chrome()
+    option = Options()
+    option.headless = True
+    option.add_argument("window-size=1920,1080")
+    driver = webdriver.Chrome(ChromeDriverManager().install(),options=option)
     driver.maximize_window()
+    # driver.set_window_size(1920, 1080)
     driver.delete_all_cookies()
 
     login(driver, email, password,country)
