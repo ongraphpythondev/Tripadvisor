@@ -5,7 +5,7 @@ import os, sys
 myPath = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, myPath)
 
-BROKER_URL = "redis://localhost:6379/1"
+BROKER_URL = "redis://localhost:6379"
 app = Celery("tasks", broker=BROKER_URL)
 
 @app.task

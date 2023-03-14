@@ -8,6 +8,7 @@ from openapi_api import chatResponse
 from multiprocessing import Process, Pool
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
+from pyvirtualdisplay import Display
 
 login_attempt = 0
 comment_attempt = 0
@@ -184,6 +185,8 @@ def post_comment(driver,url,waitingTime):
             exit()
 
 def start_process(country,email,password):
+    # display = Display(visible=0,size=(800,600))
+    # display.start()
     option = Options()
     option.headless = True
     option.add_argument("window-size=1920,1080")
@@ -200,6 +203,7 @@ def start_process(country,email,password):
         global comment_attempt
         comment_attempt=0
 
+    # display.stop()
     driver.quit()
 
 
